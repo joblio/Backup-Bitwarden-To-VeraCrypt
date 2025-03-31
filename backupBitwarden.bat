@@ -18,9 +18,10 @@ if exist %MOUNT_LETTER%:\ (
 ) else (
     echo VeraCrypt volume is not mounted. Mounting now...
     set /p VC_PASSWORD="Enter VeraCrypt password: "
-    "%VC_PATH%" /q /v %VC_VOLUME% /l %MOUNT_LETTER% /p !VC_PASSWORD! /a /b
+    %VC_PATH% /q /v %VC_VOLUME% /l %MOUNT_LETTER% /p !VC_PASSWORD! /a /b
     if %ERRORLEVEL% neq 0 (
         echo Failed to mount VeraCrypt volume.
+        pause
         exit /b 1
     )
     set VC_PASSWORD=
@@ -29,6 +30,7 @@ if exist %MOUNT_LETTER%:\ (
 :: Verify password file exists
 if not exist "%PASSWORD_FILE%" (
     echo Error: Password file not found at %PASSWORD_FILE%.
+    pause
     exit /b 1
 )
 
@@ -37,8 +39,12 @@ for /f "delims=" %%s in ('%BW_PATH% login --raw %BW_EMAIL% ^< "%PASSWORD_FILE%"'
 
 :: Verify login success
 if not defined BW_SESSION (
-    echo Failed to retrieve Bitwarden session.
-    exit /b 1
+	for /f "delims=" %%s in ('%BW_PATH% unlock --raw ^< "%PASSWORD_FILE%"') do set BW_SESSION=%%s
+	if not defined BW_SESSION (
+		echo Failed to retrieve Bitwarden session.
+		pause
+		exit /b 1
+	)
 )
 
 :: Sync the Bitwarden vault
@@ -51,3 +57,4 @@ if not defined BW_SESSION (
 set BW_SESSION=
 
 echo Bitwarden vault exported successfully to %EXPORT_FILE%.
+pause
