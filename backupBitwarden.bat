@@ -1,16 +1,33 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: Configuration
+:: Configuration - CHANGE THESE VALUES BEFORE RUNNING
 set VC_PATH="C:\Program Files\VeraCrypt\VeraCrypt.exe"
-set VC_VOLUME="C:\Users\Path\To\Your\Encrypted\volume.hc"
+set VC_VOLUME="CHANGE_ME_C:\Path\To\Your\VeraCrypt\Volume.hc"
 set MOUNT_LETTER=V
 set BW_PATH=bw
-set BW_EMAIL=yourBitWardenEmail@domain.co
+set BW_EMAIL=CHANGE_ME_your.email@example.com
 set EXPORT_FILE=%MOUNT_LETTER%:\
 :: This script requires that you have your bitwarden password in a single-line 
 :: text file in your VeraCrypt volume.
 set PASSWORD_FILE=%MOUNT_LETTER%:\password.txt
+
+:: Check if VeraCrypt executable exists
+if not exist %VC_PATH% (
+    echo ERROR: VeraCrypt not found at %VC_PATH%
+    echo Please install VeraCrypt or update VC_PATH in the configuration.
+    pause
+    exit /b 1
+)
+
+:: Check if Bitwarden CLI is available
+%BW_PATH% --version >nul 2>&1
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Bitwarden CLI not found or not in PATH.
+    echo Please install Bitwarden CLI or update BW_PATH in the configuration.
+    pause
+    exit /b 1
+)
 
 :: Check if VeraCrypt volume is already mounted
 if exist %MOUNT_LETTER%:\ (
@@ -48,10 +65,37 @@ if not defined BW_SESSION (
 )
 
 :: Sync the Bitwarden vault
-%BW_PATH% sync --session %BW_SESSION%
+echo.
+echo Syncing Bitwarden vault...
+%BW_PATH% sync --session "%BW_SESSION%"
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo Failed to sync Bitwarden vault (Error code: %ERRORLEVEL%^).
+    set BW_SESSION=
+    pause
+    exit /b 1
+)
+echo.
+echo Sync completed successfully.
 
 :: Export the vault in unencrypted JSON format
-%BW_PATH% export --format json --output %EXPORT_FILE% --session %BW_SESSION%
+echo.
+echo Exporting vault to %EXPORT_FILE%...
+%BW_PATH% export --format json --output %EXPORT_FILE% --session "%BW_SESSION%"
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo Failed to export Bitwarden vault (Error code: %ERRORLEVEL%^).
+    echo.
+    echo Possible causes:
+    echo - VeraCrypt volume may be full (check disk space^)
+    echo - Insufficient permissions to write to %EXPORT_FILE%
+    echo - Network/volume connectivity issues
+    echo.
+    set BW_SESSION=
+    pause
+    exit /b 1
+)
+echo Export completed successfully.
 
 :: Clear the session key
 set BW_SESSION=

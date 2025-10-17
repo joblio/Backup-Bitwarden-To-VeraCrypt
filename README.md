@@ -13,12 +13,22 @@ This script automates the process of backing up your Bitwarden vault to a VeraCr
 
 Before running the script, update the following configuration variables in `backupBitwarden.bat`:
 
-- `VC_PATH`: Path to the VeraCrypt executable
-- `VC_VOLUME`: Path to your VeraCrypt volume
-- `MOUNT_LETTER`: Drive letter to mount the VeraCrypt volume
-- `BW_PATH`: Path to the Bitwarden CLI executable (usually just `bw` if it's in your PATH)
-- `BW_EMAIL`: Your Bitwarden email address
-- `PASSWORD_FILE`: Path to the Bitwarden password file within the mounted VeraCrypt volume
+### Required Configuration Changes:
+- `VC_VOLUME`: Path to your VeraCrypt volume file (e.g., `"D:\MySecrets\vault.hc"`)
+- `BW_EMAIL`: Your Bitwarden email address (e.g., `user@example.com`)
+
+### Optional Configuration:
+- `VC_PATH`: Path to VeraCrypt executable (default: `"C:\Program Files\VeraCrypt\VeraCrypt.exe"`)
+- `MOUNT_LETTER`: Drive letter to mount the VeraCrypt volume (default: `V`)
+- `BW_PATH`: Bitwarden CLI command (default: `bw` - assumes it's in your PATH)
+- `EXPORT_FILE`: Export destination folder (default: `V:\` - root of mounted volume)
+- `PASSWORD_FILE`: Bitwarden password file location (default: `V:\password.txt`)
+
+### Example Configuration:
+```batch
+set VC_VOLUME="D:\Secure\MyVault.hc"
+set BW_EMAIL=john.doe@example.com
+```
 
 ## Usage
 
@@ -34,9 +44,25 @@ The script will:
 6. Export the Bitwarden vault in unencrypted JSON format to the specified location within the VeraCrypt volume.
 7. Clear the Bitwarden session key.
 
-## Notes
+## Setup Instructions
 
-- The exported Bitwarden vault is in unencrypted JSON format. Handle it with care and ensure it is stored securely within the VeraCrypt volume.
-- This is a rough batch file, and does not check for certain things, such as:
- - If bw is already logged in, this will fail
- - It does not check if you are out of disk space in the encrypted volume
+1. **Install Prerequisites**: Ensure VeraCrypt and Bitwarden CLI are installed
+2. **Create VeraCrypt Volume**: Create an encrypted volume file
+3. **Create Password File**: In your VeraCrypt volume, create a text file named `password.txt` containing only your Bitwarden password
+4. **Configure Script**: Edit the configuration variables in `backupBitwarden.bat`
+5. **Test Run**: Execute the script to verify everything works
+
+## Troubleshooting
+
+- **"VeraCrypt not found"**: Update `VC_PATH` to correct VeraCrypt installation path
+- **"Bitwarden CLI not found"**: Install Bitwarden CLI or update `BW_PATH`
+- **"Failed to mount"**: Check VeraCrypt volume path and password
+- **"Password file not found"**: Ensure `password.txt` exists in your VeraCrypt volume
+- **Configuration errors**: Make sure you've changed `CHANGE_ME_` placeholder values
+
+## Security Notes
+
+- The exported Bitwarden vault is in unencrypted JSON format within the encrypted VeraCrypt volume
+- Password file should only contain your Bitwarden password on a single line
+- Ensure VeraCrypt volume is dismounted when not in use
+- Consider using Bitwarden API keys instead of passwords for enhanced security
