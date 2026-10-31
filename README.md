@@ -24,6 +24,10 @@ Before running the script, update the following configuration variables in `back
 - `EXPORT_FILE`: Export destination folder (default: `V:\` - root of mounted volume)
 - `PASSWORD_FILE`: Bitwarden password file location (default: `V:\password.txt`)
 
+Instead of editing `backupBitwarden.bat`, copy `backupBitwarden.local.example.bat` to `backupBitwarden.local.bat` (same folder) and set the values there. It is loaded automatically and ignored by git.
+
+You also need an empty file named `.backup-volume` in the root of the VeraCrypt volume. The script uses it to confirm the drive letter is really your backup volume.
+
 ### Example Configuration:
 ```batch
 set VC_VOLUME="D:\Secure\MyVault.hc"
