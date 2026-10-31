@@ -23,6 +23,7 @@ Before running the script, update the following configuration variables in `back
 - `BW_PATH`: Bitwarden CLI command (default: `bw` - assumes it's in your PATH)
 - `EXPORT_FILE`: Export destination folder (default: `V:\` - root of mounted volume)
 - `PASSWORD_FILE`: Bitwarden password file location (default: `V:\password.txt`)
+- `KEEP_EXPORTS`: Number of newest `bitwarden_export_*.json` files to keep after a successful export (default: `10`, `0` keeps everything)
 
 Instead of editing `backupBitwarden.bat`, copy `backupBitwarden.local.example.bat` to `backupBitwarden.local.bat` (same folder) and set the values there. It is loaded automatically and ignored by git.
 

@@ -7,6 +7,9 @@ set VC_VOLUME="CHANGE_ME_C:\Path\To\Your\VeraCrypt\Volume.hc"
 set MOUNT_LETTER=V
 set BW_PATH=bw
 set BW_EMAIL=CHANGE_ME_your.email@example.com
+:: Number of newest bitwarden_export_*.json files to keep in EXPORT_FILE (0 = keep all)
+set KEEP_EXPORTS=10
+
 :: Personal settings live in backupBitwarden.local.bat (not tracked by git) and
 :: override the values above. See backupBitwarden.local.example.bat.
 if exist "%~dp0backupBitwarden.local.bat" call "%~dp0backupBitwarden.local.bat"
@@ -146,6 +149,15 @@ if not "%EXPORT_RC%"=="0" (
     goto :cleanup
 )
 echo Export completed successfully.
+
+:: Keep only the newest KEEP_EXPORTS exports (file names sort by timestamp).
+:: This runs only after a successful export, so a failed run never deletes backups.
+if %KEEP_EXPORTS% lss 1 goto :rotated
+for /f "skip=%KEEP_EXPORTS% delims=" %%f in ('dir /b /a-d /o-n "%EXPORT_FILE%bitwarden_export_*.json" 2^>nul') do (
+    echo Removing old export %%f
+    del "%EXPORT_FILE%%%f"
+)
+:rotated
 echo.
 echo Bitwarden vault exported successfully to %EXPORT_FILE%.
 
@@ -156,6 +168,10 @@ set BW_SESSION=
 
 :: Only dismount a volume that this script mounted
 if "%MOUNTED_BY_SCRIPT%"=="1" (
+    echo.
+    echo Volume %MOUNT_LETTER%: is still mounted.
+    echo Press any key when you are ready to dismount it...
+    pause >nul
     echo Dismounting VeraCrypt volume...
     start /wait "" %VC_PATH% /q /s /d %MOUNT_LETTER%
     if errorlevel 1 echo WARNING: Failed to dismount %MOUNT_LETTER%: - dismount it manually.
